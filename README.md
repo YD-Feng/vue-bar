@@ -59,7 +59,7 @@ config = {
     scrollingPhantomDelay: 1000, //移除拖选样式（滚动条）的延迟时间
     draggingPhantomDelay: 1000, //移除拖选样式（滚动条外壳）的延迟时间
     preventParentScroll: false, //阻止父级元素滚动
-    useScrollBarPseudo: false, //使用 pseudo 样式选择器来处理原始滚动条隐藏的问题，只有 chrome 和 safari 浏览器支持
+    useScrollBarPseudo: false //使用 pseudo 样式选择器来处理原始滚动条隐藏的问题，只有 chrome 和 safari 浏览器支持
 }
 ```
 <br />
