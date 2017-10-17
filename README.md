@@ -62,4 +62,8 @@ config = {
     useScrollBarPseudo: false //使用 pseudo 样式选择器来处理原始滚动条隐藏的问题，只有 chrome 和 safari 浏览器支持
 }
 ```
-<br />
+
+<br /><br /><br />
+
+# 关于模拟滚动条样式调整
+可直接修改 vue-bar.css 文件来实现
