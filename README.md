@@ -42,7 +42,7 @@ Vue.use(VueBar);
 
 v-bar 指令支持传入一个 config 对象
 ```
-<div v-bar="{'preventParentScroll': true, scrollThrottle: 30}">
+<div v-bar="{'preventParentScroll': true}">
   <div>
     <!-- 滚动内容 -->
   </div>
