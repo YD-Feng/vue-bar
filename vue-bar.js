@@ -21,12 +21,12 @@
                         resizeRefresh: true,
                         observerThrottle: 100,
                         resizeDeBounce: 100,
-                        unSelectableBody: true,
-                        overrideFloatingScrollBar: true,
-                        scrollingPhantomDelay: 1000,
-                        draggingPhantomDelay: 1000,
-                        preventParentScroll: false,
-                        useScrollBarPseudo: false, // 使用 pseudo 样式选择器来处理原始滚动条隐藏的问题，只有 chrome 和 safari 浏览器支持
+                        unSelectableBody: true, //
+                        overrideFloatingScrollBar: true, //是否覆盖悬浮滚动条（只有在移动设备上会出现悬浮滚动条）
+                        scrollingPhantomDelay: 1000, //移除拖选样式（滚动条）的延迟时间
+                        draggingPhantomDelay: 1000, //移除拖选样式（滚动条外壳）的延迟时间
+                        preventParentScroll: false, //阻止父级元素滚动
+                        useScrollBarPseudo: false, //使用 pseudo 样式选择器来处理原始滚动条隐藏的问题，只有 chrome 和 safari 浏览器支持
 
                         el1Class: 'vb',
                         el1ScrollVisibleClass: 'vb-visible',
@@ -541,36 +541,6 @@
                 delete el._vueBarState;
             }
 
-
-
-
-
-
-            //注入公共方法
-            function publicMethods () {
-                return {
-                    getState: getState,
-                    initScrollbar: initScrollbar,
-                    destroyScrollbar: destroyScrollbar,
-                    refreshScrollbar: refreshScrollbar
-                };
-            }
-            Vue.vuebar = publicMethods();
-            Vue.prototype.$vuebar = publicMethods();
-
-            //自定义指令
-            Vue.directive('bar', {
-                inserted: function (el, binding, vnode) {
-                    initScrollbar.call(this, el, binding);
-                },
-                componentUpdated: function (el, binding, vnode, oldVnode) {
-                    refreshScrollbar.call(this, el);
-                },
-                unbind: function (el, binding, vnode, oldVnode) {
-                    destroyScrollbar.call(this, el, {clearStyles: false});
-                }
-            });
-
             //放抖动处理函数
             function debounce (fn, delay) {
                 var timer = null;
@@ -669,7 +639,6 @@
                 };
             }
 
-
             //获取浏览器默认滚动条的宽度
             function getNativeScrollbarWidth (container) {
                 var container = container ? container : document.body,
@@ -696,6 +665,31 @@
 
                 return barWidth;
             }
+
+            //注入公共方法
+            function publicMethods () {
+                return {
+                    getState: getState,
+                    initScrollbar: initScrollbar,
+                    destroyScrollbar: destroyScrollbar,
+                    refreshScrollbar: refreshScrollbar
+                };
+            }
+            Vue.vuebar = publicMethods();
+            Vue.prototype.$vuebar = publicMethods();
+
+            //自定义指令
+            Vue.directive('bar', {
+                inserted: function (el, binding, vnode) {
+                    initScrollbar.call(this, el, binding);
+                },
+                componentUpdated: function (el, binding, vnode, oldVnode) {
+                    refreshScrollbar.call(this, el);
+                },
+                unbind: function (el, binding, vnode, oldVnode) {
+                    destroyScrollbar.call(this, el, {clearStyles: false});
+                }
+            });
         }
     };
 
