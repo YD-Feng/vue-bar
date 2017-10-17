@@ -2,6 +2,7 @@
     z-index: 5;
     width: 12px;
     right: 0;
+    overflow: hidden;
 }
 
 .vb > .vb-dragger > .vb-dragger-styler {
