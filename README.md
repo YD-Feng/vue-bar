@@ -1,11 +1,12 @@
 # vue-bar
 
-Vue 模拟滚动条自定义指令拓展<br><br>
+Vue 模拟滚动条 - 自定义指令<br><br>
 原版gitHub：https://github.com/DominikSerafin/vuebar<br>
 本版作者：YD-Feng<br>
 主要调整：<br>
-代码注释本土化，修复了没生成模拟滚动条时，拖动内容会导致隐藏的原生滚动条显示出来的bug<br>
-补全水平模拟滚动条功能<br>
+1.代码注释本土化<br>
+2.修复了没生成模拟滚动条时，拖动内容会导致隐藏的原生滚动条显示出来的bug<br>
+3.补全水平模拟滚动条功能<br>
 
 <br /><br /><br />
 
