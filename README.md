@@ -3,9 +3,9 @@
 Vue 模拟滚动条自定义指令拓展<br><br>
 原版gitHub：https://github.com/DominikSerafin/vuebar<br>
 本版作者：YD-Feng<br>
-主要调整：注释本土化，修复了没生成模拟滚动条时，拖动内容会导致隐藏的原生滚动条显示出来的bug<br>
-注意：此指令只能模拟垂直滚动条，overflow-x 会被强制置为 hidden<br>
-未来计划：补全水平模拟滚动条功能<br>
+主要调整：<br>
+代码注释本土化，修复了没生成模拟滚动条时，拖动内容会导致隐藏的原生滚动条显示出来的bug<br>
+补全水平模拟滚动条功能<br>
 
 <br /><br /><br />
 

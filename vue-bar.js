@@ -1,10 +1,10 @@
 /*
-* vue-bar —— Vue 模拟垂直方向滚动条自定义指令拓展
-* 原版gitHub：https://github.com/DominikSerafin/vuebar
-* 本版作者：YD-Feng
-* 主要调整：注释本土化，修复了没生成模拟滚动条时，拖动内容会导致隐藏的原生滚动条显示出来的bug
-* 注意：此指令只能模拟垂直滚动条，overflow-x 会被强制置为 hidden
-* */
+ * vue-bar —— Vue 模拟垂直方向滚动条自定义指令拓展
+ * 原版gitHub：https://github.com/DominikSerafin/vuebar
+ * 本版作者：YD-Feng
+ * 主要调整：注释本土化，修复了没生成模拟滚动条时，拖动内容会导致隐藏的原生滚动条显示出来的bug
+ * 注意：此指令只能模拟垂直滚动条，overflow-x 会被强制置为 hidden
+ * */
 ;(function(){
     'use strict';
 
@@ -39,7 +39,9 @@
                         el2Class: 'vb-content',
 
                         draggerClass: 'vb-dragger',
-                        draggerStylerClass: 'vb-dragger-styler'
+                        draggerStylerClass: 'vb-dragger-styler',
+                        draggerClassX: 'vb-dragger-x',
+                        draggerStylerClassX: 'vb-dragger-styler-x'
                     },
 
                     //缓存指令的 binding 对象
@@ -49,6 +51,7 @@
                     el1: null,
                     el2: null,
                     dragger: null,
+                    draggerX: null,
 
                     //控制滚动条显隐
                     draggerEnabled: null,
@@ -59,6 +62,13 @@
                     barHeight: 0, //滚动条样式 height 属性
                     mouseBarOffsetY: 0, //鼠标点击滚动条时的 offsetY 值
                     barDragging: false, //滚动条是否正被拖动
+
+                    visibleAreaX: 0,
+                    scrollLeft: 0,
+                    barLeft: 0,
+                    barWidth: 0,
+                    mouseBarOffsetX: 0,
+                    barDraggingX: false,
 
                     //缓存变化监控器
                     mutationObserver: null,
@@ -71,6 +81,7 @@
 
                     //缓存事件回调函数，移除事件的时候必须用到它作为传参，所以缓存起来
                     barMousedown: null,
+                    barMousedownX: null,
                     documentMousemove: null,
                     documentMouseup: null,
                     windowResize: null,
@@ -100,11 +111,19 @@
                 var state = getState(el);
                 state.visibleArea = (state.el2.clientHeight / state.el2.scrollHeight);
             }
+            function computeVisibleAreaX (el) {
+                var state = getState(el);
+                state.visibleAreaX = (state.el2.clientWidth / state.el2.scrollWidth);
+            }
 
             //计算 scrollTop
             function computeScrollTop (el) {
                 var state = getState(el);
                 state.scrollTop = state.barTop * (state.el2.scrollHeight / state.el2.clientHeight);
+            }
+            function computeScrollLeft (el) {
+                var state = getState(el);
+                state.scrollLeft = state.barLeft * (state.el2.scrollWidth / state.el2.clientWidth);
             }
 
             //计算 barTop
@@ -132,6 +151,30 @@
                     }
                 }
             }
+            function computeBarLeft (el, event) {
+                var state = getState(el);
+
+                if (!event) {
+                    //如果不是通过鼠标移动事件回调触发执行...
+                    state.barLeft = state.el2.scrollLeft * state.visibleAreaX;
+                    return false;
+                } else {
+                    //如果通过鼠标移动事件回调触发执行...
+                    var relativeMouseY = (event.clientX - state.el1.getBoundingClientRect().left);
+
+                    if (relativeMouseY <= state.mouseBarOffsetX) {
+                        state.barLeft = 0;
+                    }
+
+                    if (relativeMouseY > state.mouseBarOffsetX) {
+                        state.barLeft = relativeMouseY - state.mouseBarOffsetX;
+                    }
+
+                    if ( (state.barLeft + state.barWidth ) >= state.el2.clientWidth ) {
+                        state.barLeft = state.el2.clientWidth - state.barWidth;
+                    }
+                }
+            }
 
             //计算滚动条高度
             function computeBarHeight (el) {
@@ -142,20 +185,28 @@
                     state.barHeight = state.el2.clientHeight * state.visibleArea;
                 }
             }
+            function computeBarWidth (el) {
+                var state = getState(el);
+                if (state.visibleAreaX >= 1) {
+                    state.barWidth = 0;
+                } else {
+                    state.barWidth = state.el2.clientWidth * state.visibleAreaX;
+                }
+            }
 
             //生成模拟滚动条
-            function createDragger (el) {
+            function createDragger (el, flag) {
                 var state = getState(el),
                     dragger = document.createElement('div'),
                     draggerStyler = document.createElement('div');
 
-                dragger.className = state.config.draggerClass;
+                dragger.className = flag ? state.config.draggerClassX : state.config.draggerClass;
                 dragger.style.position = 'absolute';
                 if (!state.draggerEnabled) {
                     dragger.style.display = 'none';
                 }
 
-                draggerStyler.className = state.config.draggerStylerClass;
+                draggerStyler.className = flag ? state.config.draggerStylerClassX : state.config.draggerStylerClass;
 
                 dragger.appendChild(draggerStyler);
                 state.el1.appendChild(dragger);
@@ -184,6 +235,25 @@
                     state.el2.style.overflowY = 'hidden';
                     state.el2.style.maxWidth = '100%';
                 }
+
+                //横向滚动条相关
+                state.draggerX.style.width = parseInt( Math.round( state.barWidth ) ) + 'px';
+                state.draggerX.style.left = parseInt( Math.round( state.barLeft ) ) + 'px';
+
+                if (state.draggerEnabled && (state.visibleAreaX < 1)) {
+                    //显示模拟滚动条
+                    removeClass(state.el1, state.config.el1ScrollInvisibleClass);
+                    addClass(state.el1, state.config.el1ScrollVisibleClass);
+                    state.el2.style.overflowX = 'scroll';
+                    state.el2.style.maxHeight = 'none';
+                } else {
+                    //隐藏模拟滚动条
+                    removeClass(state.el1, state.config.el1ScrollVisibleClass);
+                    addClass(state.el1, state.config.el1ScrollInvisibleClass);
+                    state.el2.style.overflowX = 'hidden';
+                    state.el2.style.maxHeight = '100%';
+                }
+                //横向滚动条相关 end
 
                 if (options.withScrollingClasses) {
                     //模拟滚动条添加【滚动中】样式 class
@@ -270,6 +340,7 @@
             function updateScroll (el) {
                 var state = getState(el);
                 state.el2.scrollTop = state.scrollTop;
+                state.el2.scrollLeft = state.scrollLeft;
             }
 
             //刷新滚动条
@@ -280,6 +351,9 @@
                     computeVisibleArea(el);
                     computeBarTop(el);
                     computeBarHeight(el);
+                    computeVisibleAreaX(el);
+                    computeBarLeft(el);
+                    computeBarWidth(el);
                     updateDragger(el);
                 }
 
@@ -290,6 +364,9 @@
                     computeVisibleArea(el);
                     computeBarTop(el);
                     computeBarHeight(el);
+                    computeVisibleAreaX(el);
+                    computeBarLeft(el);
+                    computeBarWidth(el);
                     updateDragger(el);
                 }.bind(this));
             }
@@ -300,9 +377,19 @@
                 var state = getState(el);
                 return throttle(function (event) {
                     computeVisibleArea(el);
+                    computeVisibleAreaX(el);
                     computeBarHeight(el);
+                    computeBarWidth(el);
+
                     if (!state.barDragging) {
                         computeBarTop(el);
+                        updateDragger(el, {
+                            withScrollingClasses: true
+                        });
+                    }
+
+                    if (!state.barDraggingX) {
+                        computeBarLeft(el);
                         updateDragger(el, {
                             withScrollingClasses: true
                         });
@@ -319,10 +406,21 @@
             function documentMousemove (el) {
                 var state = getState(el);
                 return throttle(function (event) {
-                    computeBarTop(el, event);
-                    updateDragger(el);
-                    computeScrollTop(el);
-                    updateScroll(el);
+                    if (state.barDragging) {
+                        console.info(1);
+                        computeBarTop(el, event);
+                        updateDragger(el);
+                        computeScrollTop(el);
+                        updateScroll(el);
+                    }
+
+                    if (state.barDraggingX) {
+                        console.info(2);
+                        computeBarLeft(el, event);
+                        updateDragger(el);
+                        computeScrollLeft(el);
+                        updateScroll(el);
+                    }
                 }.bind(this), state.config.dragThrottle);
             }
 
@@ -331,6 +429,7 @@
 
                 return function (event) {
                     state.barDragging = false;
+                    state.barDraggingX = false;
 
                     //设置是可以拖选
                     state.el1.style.userSelect = '';
@@ -352,6 +451,7 @@
                 var state = getState(el);
 
                 return function (event) {
+                    console.info('aaa');
                     //如果不是点击鼠标左键，不做任何事
                     if ( event.which !== 1 ) {
                         return false
@@ -359,6 +459,33 @@
 
                     state.barDragging = true;
                     state.mouseBarOffsetY = event.offsetY;
+
+                    //设置不可拖选
+                    state.el1.style.userSelect = 'none';
+                    state.config.unSelectableBody ? compatStyle(document.body, 'UserSelect', 'none') : null;
+
+                    //添加拖动滚动条样式 class
+                    addClass(state.el1, state.config.el1DraggingClass);
+                    state.draggingPhantomClassTimeout ? clearTimeout(state.draggingPhantomClassTimeout) : null;
+                    addClass(state.el1, state.config.el1DraggingPhantomClass);
+
+                    document.addEventListener('mousemove', state.documentMousemove, 0);
+                    document.addEventListener('mouseup', state.documentMouseup, 0);
+                }.bind(this);
+            }
+
+            function barMousedownX (el) {
+                var state = getState(el);
+
+                return function (event) {
+                    console.info('bbb');
+                    //如果不是点击鼠标左键，不做任何事
+                    if ( event.which !== 1 ) {
+                        return false
+                    }
+
+                    state.barDraggingX = true;
+                    state.mouseBarOffsetX = event.offsetX;
 
                     //设置不可拖选
                     state.el1.style.userSelect = 'none';
@@ -439,9 +566,11 @@
                 state.el1 = el;
                 state.el2 = el.firstElementChild;
                 state.dragger = createDragger(el);
+                state.draggerX = createDragger(el, true);
 
                 //绑定事件并缓存事件回调函数
                 state.barMousedown = barMousedown(el);
+                state.barMousedownX = barMousedownX(el);
                 state.documentMousemove = documentMousemove(el);
                 state.documentMouseup = documentMouseup(el);
                 state.windowResize = windowResize(el);
@@ -458,7 +587,7 @@
 
                 addClass(state.el2, state.config.el2Class);
                 state.el2.style.display = 'block';
-                state.el2.style.overflowX = 'hidden';
+                state.el2.style.overflowX = 'scroll';
                 state.el2.style.overflowY = 'scroll';
                 state.el2.style.height = '100%';
 
@@ -473,15 +602,18 @@
                         state.el2.style.width = '100%';
                         compatStyle(state.el2, 'BoxSizing', 'content-box');
                         state.el2.style.paddingRight = '20px';
+                        state.el2.style.paddingBottom = '20px';
                     } else {
                         //如果浏览器默认滚动条是常规滚动条（有宽度）
                         state.el2.style.width = 'calc(100% + ' + elNativeScrollbarWidth + 'px)';
+                        state.el2.style.height = 'calc(100% + ' + elNativeScrollbarWidth + 'px)';
                     }
                 }
 
                 //绑定事件
                 state.el2.addEventListener('scroll', state.scrollHandler, 0);
                 state.dragger.addEventListener('mousedown', state.barMousedown, 0);
+                state.draggerX.addEventListener('mousedown', state.barMousedownX, 0);
                 state.config.preventParentScroll ? state.el2.addEventListener('wheel', state.wheelHandler, 0) : null;
                 state.config.resizeRefresh ? window.addEventListener('resize', state.windowResize, 0) : null;
 
