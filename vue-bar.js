@@ -182,7 +182,7 @@
                 if (state.visibleArea >= 1) {
                     state.barHeight = 0;
                 } else {
-                    state.barHeight = state.el2.clientHeight * state.visibleArea;
+                    state.barHeight = state.el2.clientHeight * state.visibleArea - 20;
                 }
             }
             function computeBarWidth (el) {
@@ -190,7 +190,7 @@
                 if (state.visibleAreaX >= 1) {
                     state.barWidth = 0;
                 } else {
-                    state.barWidth = state.el2.clientWidth * state.visibleAreaX;
+                    state.barWidth = state.el2.clientWidth * state.visibleAreaX - 20;
                 }
             }
 
