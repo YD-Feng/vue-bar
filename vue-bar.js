@@ -407,15 +407,15 @@
             function documentMousemove (el) {
                 var state = getState(el);
                 return throttle(function (event) {
-                    computeBarTop(el, event);
+
+                    computeBarTop(el, state.barDragging ? event : undefined);
+                    computeBarLeft(el, state.barDraggingX ? event : undefined);
                     updateDragger(el);
+
                     computeScrollTop(el);
-
-                    computeBarLeft(el, event);
-                    updateDragger(el);
                     computeScrollLeft(el);
-
                     updateScroll(el);
+
                 }.bind(this), state.config.dragThrottle);
             }
 
