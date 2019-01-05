@@ -1,10 +1,10 @@
 /*
- * vue-bar —— Vue 模拟垂直方向滚动条自定义指令拓展
- * 原版gitHub：https://github.com/DominikSerafin/vuebar
- * 本版作者：YD-Feng
- * 主要调整：注释本土化，修复了没生成模拟滚动条时，拖动内容会导致隐藏的原生滚动条显示出来的bug
- * 注意：此指令只能模拟垂直滚动条，overflow-x 会被强制置为 hidden
- * */
+* vue-bar —— Vue 模拟垂直方向滚动条自定义指令拓展
+* 原版gitHub：https://github.com/DominikSerafin/vuebar
+* 本版作者：YD-Feng
+* 主要调整：注释本土化，修复了没生成模拟滚动条时，拖动内容会导致隐藏的原生滚动条显示出来的bug
+* 注意：此指令只能模拟垂直滚动条，overflow-x 会被强制置为 hidden
+* */
 ;(function(){
     'use strict';
 
@@ -361,6 +361,7 @@
                     if ( !getState(el) ) {
                         return false;
                     }
+
                     computeVisibleArea(el);
                     computeBarTop(el);
                     computeBarHeight(el);
@@ -406,19 +407,15 @@
             function documentMousemove (el) {
                 var state = getState(el);
                 return throttle(function (event) {
-                    if (state.barDragging) {
-                        computeBarTop(el, event);
-                        updateDragger(el);
-                        computeScrollTop(el);
-                        updateScroll(el);
-                    }
+                    computeBarTop(el, event);
+                    updateDragger(el);
+                    computeScrollTop(el);
 
-                    if (state.barDraggingX) {
-                        computeBarLeft(el, event);
-                        updateDragger(el);
-                        computeScrollLeft(el);
-                        updateScroll(el);
-                    }
+                    computeBarLeft(el, event);
+                    updateDragger(el);
+                    computeScrollLeft(el);
+
+                    updateScroll(el);
                 }.bind(this), state.config.dragThrottle);
             }
 
@@ -627,7 +624,7 @@
                 //移除事件绑定
                 state.dragger.removeEventListener('mousedown', state.barMousedown, 0);
                 state.el2.removeEventListener('scroll', state.scrollHandler, 0);
-                state.el2.removeEventListener('wheel', state.scrollHandler, 0);
+                state.el2.removeEventListener('wheel', state.wheelHandler, 0);
                 window.removeEventListener('resize', state.windowResize, 0);
 
                 //销毁变化监控器
